@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: camunda-workflow-app
+  
+  datasource:
+    url: jdbc:h2:./camunda-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: sa
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+  
+  sql:
+    init:
+      mode: always
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
+
+# Camunda Configuration
+camunda:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+      firstName: Admin
+      lastName: User
+      email: admin@example.com
+    
+    filter:
+      create: All tasks
+    
+    webapp:
+      index-redirect-enabled: true
+    
+    database:
+      schema-update: true
+      type: h2
+    
+    auto-deployment-enabled: true
+
+    # Make sure BPMN files under src/main/resources/processes are auto-deployed
+    # (defaults vary between setups; being explicit avoids "no processes deployed" issues)
+    deployment-resource-pattern: classpath*:/processes/**/*.bpmn
+
+    # Set default history time to live (in days) - required for Camunda 7.21+
+    history-time-to-live: P180D
+    
+    generic-properties:
+      properties:
+        # Set default historyTimeToLive for processes without explicit TTL
+        historyTimeToLive: P180D
+        # Disable strict TTL enforcement (allows processes without TTL to deploy)
+        enforceHistoryTimeToLive: false
+    
+    # Enable Camunda REST API
+    rest:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    org.camunda: INFO
+    org.springframework: INFO
+    com.workflow: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

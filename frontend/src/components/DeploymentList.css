@@ -1,0 +1,70 @@
+.deployment-list {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.list-header h2 {
+    font-size: 1.25rem;
+}
+
+.list-header button {
+    background: var(--bg-elevated);
+    color: var(--text);
+}
+
+.deployments-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.deployments-table th,
+.deployments-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.deployments-table th {
+    background: var(--bg);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.deployments-table tbody tr:hover {
+    background: var(--bg);
+}
+
+.deployment-name {
+    font-weight: 600;
+}
+
+.delete-btn {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.delete-btn:hover:not(:disabled) {
+    background: var(--danger);
+    color: white;
+}
+
+.no-deployments {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}

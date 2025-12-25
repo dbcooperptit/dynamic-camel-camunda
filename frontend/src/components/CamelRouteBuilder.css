@@ -1,0 +1,544 @@
+/* Camel Route Builder Styles */
+.camel-route-builder {
+    display: grid;
+    grid-template-columns: 220px 1fr 300px;
+    gap: 0;
+    height: calc(100vh - 100px);
+    min-height: 600px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+/* Sidebar */
+.camel-sidebar {
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.camel-sidebar h3 {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Node Palette */
+.camel-palette {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.camel-palette-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: grab;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+}
+
+.camel-palette-item:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+}
+
+.camel-palette-item:active {
+    cursor: grabbing;
+}
+
+.camel-palette-item.sample-route {
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+    border-left: 3px solid var(--primary);
+}
+
+.camel-palette-item.sample-route:hover {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    transform: none;
+}
+
+.palette-icon {
+    font-size: 1.1rem;
+}
+
+.palette-label {
+    flex: 1;
+    font-weight: 500;
+}
+
+/* Route Metadata Form */
+.route-metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.route-metadata label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.route-metadata input {
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
+/* Canvas */
+.camel-canvas {
+    position: relative;
+    background: var(--bg-elevated);
+}
+
+/* Properties Panel */
+.camel-properties {
+    background: var(--bg);
+    border-left: 1px solid var(--border);
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.camel-properties h3 {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.property-group {
+    margin-bottom: 1rem;
+}
+
+.property-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.property-group input,
+.property-group select,
+.property-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
+.property-group textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+/* Action Buttons */
+.camel-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+}
+
+.camel-actions button {
+    flex: 1;
+    padding: 0.6rem;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-deploy {
+    background: var(--success);
+    color: white;
+}
+
+.btn-deploy:hover {
+    opacity: 0.9;
+}
+
+.btn-test {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-test:hover {
+    opacity: 0.9;
+}
+
+.btn-clear {
+    background: var(--bg-card);
+    border: 1px solid var(--border) !important;
+    color: var(--text-muted);
+}
+
+/* Camel Node Styles */
+.camel-node {
+    background: var(--bg-card, #1e293b);
+    border: 2px solid var(--border, #475569);
+    border-radius: 8px;
+    min-width: 140px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.camel-node.selected {
+    border-color: var(--primary, #6366f1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+.camel-node .node-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px 6px 0 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.camel-node .node-header.from {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.camel-node .node-header.to {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.camel-node .node-header.log {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.camel-node .node-header.setbody {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+}
+
+.camel-node .node-header.transform {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.camel-node .node-header.filter {
+    background: rgba(236, 72, 153, 0.2);
+    color: #ec4899;
+}
+
+.camel-node .node-header.delay {
+    background: rgba(20, 184, 166, 0.2);
+    color: #14b8a6;
+}
+
+.camel-node .node-body {
+    padding: 8px 10px;
+}
+
+.camel-node .node-label {
+    font-weight: 600;
+    color: var(--text, #f8fafc);
+    font-size: 0.85rem;
+}
+
+.camel-node .node-uri,
+.camel-node .node-message,
+.camel-node .node-expr {
+    margin-top: 4px;
+}
+
+.camel-node .node-uri code,
+.camel-node .node-message code,
+.camel-node .node-expr code {
+    font-family: 'Fira Code', monospace;
+    background: var(--bg-elevated, #334155);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: block;
+    word-break: break-all;
+}
+
+/* Choice Node (Diamond) */
+.choice-node {
+    background: transparent;
+    border: none;
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: none;
+}
+
+.choice-diamond {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 2px solid #ec4899;
+    transform: rotate(45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.choice-symbol {
+    transform: rotate(-45deg);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ec4899;
+}
+
+.choice-node .node-label {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted, #94a3b8);
+}
+
+/* Handles */
+.camel-node .handle {
+    width: 10px !important;
+    height: 10px !important;
+    background: var(--primary, #6366f1) !important;
+    border: 2px solid var(--bg-card, #1e293b) !important;
+}
+
+.from-node .handle {
+    background: #22c55e !important;
+}
+
+.to-node .handle {
+    background: #ef4444 !important;
+}
+
+.log-node .handle {
+    background: #3b82f6 !important;
+}
+
+.setbody-node .handle {
+    background: #a855f7 !important;
+}
+
+.transform-node .handle {
+    background: #f59e0b !important;
+}
+
+.filter-node .handle {
+    background: #ec4899 !important;
+}
+
+.choice-node .handle {
+    background: #ec4899 !important;
+}
+
+.delay-node .handle {
+    background: #14b8a6 !important;
+}
+
+/* New EIP Node Header Styles */
+.camel-node .node-header.split {
+    background: rgba(99, 102, 241, 0.2);
+    color: #6366f1;
+}
+
+.camel-node .node-header.aggregate {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.camel-node .node-header.enrich {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.camel-node .node-header.trycatch {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.camel-node .node-header.loop {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+}
+
+.camel-node .node-header.throttle {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.camel-node .node-header.wiretap {
+    background: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+}
+
+/* New EIP Node Handle Colors */
+.split-node .handle {
+    background: #6366f1 !important;
+}
+
+.aggregate-node .handle {
+    background: #10b981 !important;
+}
+
+.multicast-node .handle {
+    background: #f97316 !important;
+}
+
+.enrich-node .handle {
+    background: #3b82f6 !important;
+}
+
+.trycatch-node .handle {
+    background: #ef4444 !important;
+}
+
+.loop-node .handle {
+    background: #a855f7 !important;
+}
+
+.throttle-node .handle {
+    background: #fbbf24 !important;
+}
+
+.wiretap-node .handle {
+    background: #9ca3af !important;
+}
+
+/* Multicast Node (Special Icon) */
+.multicast-node {
+    background: transparent;
+    border: none;
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: none;
+}
+
+.multicast-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 2px solid #f97316;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.multicast-node .node-label {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted, #94a3b8);
+}
+
+/* Deployed Routes List */
+.deployed-routes {
+    margin-top: 1rem;
+}
+
+.deployed-routes h4 {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0 0 0.5rem 0;
+}
+
+.route-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.route-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.6rem;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+}
+
+.route-item .route-name {
+    font-weight: 500;
+}
+
+.route-item .route-status {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.route-status.deployed {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.route-status.stopped {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+/* Toast */
+.camel-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius);
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+}
+
+.camel-toast.success {
+    background: var(--success);
+    color: white;
+}
+
+.camel-toast.error {
+    background: var(--danger);
+    color: white;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}

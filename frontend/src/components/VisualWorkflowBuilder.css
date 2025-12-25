@@ -1,0 +1,324 @@
+/* Visual Workflow Builder Styles */
+.visual-workflow-builder {
+    display: grid;
+    grid-template-columns: 260px 1fr 320px;
+    /* Increased right panel width */
+    gap: 0;
+    height: calc(100vh - 100px);
+    /* Increased height */
+    min-height: 600px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+/* Sidebar */
+.builder-sidebar {
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    padding: 1.25rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sidebar-section h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Node Palette */
+.node-palette {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.palette-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: grab;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.palette-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.palette-item:active {
+    cursor: grabbing;
+}
+
+.palette-icon {
+    font-size: 1.25rem;
+}
+
+.palette-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+/* Template Buttons */
+.template-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.template-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.9rem;
+    border-radius: var(--radius);
+    text-align: left;
+    transition: all 0.2s ease;
+    justify-content: flex-start;
+}
+
+.template-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+}
+
+/* Form Fields in Sidebar */
+.builder-sidebar .form-field {
+    margin-bottom: 1rem;
+}
+
+.builder-sidebar label {
+    font-size: 0.8rem;
+    margin-bottom: 0.35rem;
+    color: var(--text-secondary);
+}
+
+/* Canvas */
+.builder-canvas {
+    background: #f8fafc;
+    /* Light canvas background */
+    position: relative;
+    /* Dot pattern handled by React Flow Background component */
+}
+
+.builder-canvas .react-flow {
+    height: 100%;
+}
+
+.canvas-actions {
+    display: flex;
+    gap: 0.75rem;
+    background: var(--bg-card);
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.action-btn.preview {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.action-btn.preview:hover {
+    background: var(--bg-hover);
+    border-color: var(--text-muted);
+}
+
+.action-btn.deploy {
+    background: var(--primary);
+    color: white;
+}
+
+.action-btn.deploy:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
+.action-btn.clear {
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.action-btn.clear:hover {
+    color: var(--danger);
+    background: var(--danger-light);
+}
+
+/* Properties Panel */
+.properties-panel {
+    background: var(--bg-card);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-hover);
+}
+
+.panel-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+}
+
+.close-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.panel-content {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.panel-content .form-field {
+    margin-bottom: 1.5rem;
+}
+
+.panel-actions {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.delete-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+}
+
+.delete-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* Status Overlay */
+.status-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-card);
+    padding: 1.5rem 2.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    font-weight: 600;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--border);
+}
+
+.error-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--danger);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+}
+
+/* Hide properties panel when no node selected, show 2-column grid */
+.visual-workflow-builder:has(.properties-panel) {
+    grid-template-columns: 260px 1fr 320px;
+}
+
+.visual-workflow-builder:not(:has(.properties-panel)) {
+    grid-template-columns: 260px 1fr;
+}
+
+/* Action description styling */
+.action-desc {
+    display: block;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary);
+}
+
+/* Export/Import buttons */
+.action-btn.export,
+.action-btn.import {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.action-btn.export:hover,
+.action-btn.import:hover {
+    background: var(--bg-hover);
+    border-color: var(--text-muted);
+}

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: camunda-postgres
+    environment:
+      POSTGRES_DB: camunda
+      POSTGRES_USER: camunda
+      POSTGRES_PASSWORD: camunda
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - camunda-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U camunda" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  camunda-app:
+    build: .
+    container_name: camunda-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/camunda
+      SPRING_DATASOURCE_USERNAME: camunda
+      SPRING_DATASOURCE_PASSWORD: camunda
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      CAMUNDA_BPM_DATABASE_TYPE: postgres
+      CAMUNDA_BPM_DATABASE_SCHEMA_UPDATE: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - camunda-network
+
+volumes:
+  postgres-data:
+
+
+networks:
+  camunda-network:
+    driver: bridge

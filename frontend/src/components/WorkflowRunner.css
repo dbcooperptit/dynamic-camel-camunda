@@ -1,0 +1,645 @@
+/* WorkflowRunner v2 - Clean Layout */
+
+.workflow-runner-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+}
+
+/* ==================== ZONE 1: Start Process ==================== */
+.start-zone {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+}
+
+.start-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.start-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.zone-label {
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.process-select {
+    flex: 1;
+    min-width: 200px;
+    max-width: 350px;
+}
+
+.quick-fill-group {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.quick-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.quick-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+.start-btn {
+    padding: 0.5rem 1.25rem;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius);
+    white-space: nowrap;
+}
+
+.start-btn:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+.start-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Variables Row */
+.variables-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.var-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.var-chip .var-key {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.var-chip input {
+    width: 80px;
+    padding: 0.15rem 0.4rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    font-size: 0.8rem;
+}
+
+.var-chip input:focus {
+    background: var(--bg-card);
+    border-color: var(--primary);
+}
+
+.var-chip button {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.var-chip button:hover {
+    color: var(--danger);
+}
+
+.add-var-chip {
+    padding: 0.25rem 0.75rem;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.add-var-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Running Processes Row */
+.running-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.running-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.process-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--success-light);
+    color: var(--success);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.process-chip button {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    font-size: 0.7rem;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.process-chip button:hover {
+    opacity: 1;
+}
+
+/* ==================== ZONE 2: Tasks ==================== */
+.tasks-zone {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.tasks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tasks-header h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    padding: 0;
+}
+
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 0.5rem;
+    background: var(--primary);
+    color: white;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tasks-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-input input,
+.assignee-input input {
+    width: 140px;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg-hover);
+    font-size: 0.85rem;
+}
+
+.search-input input:focus,
+.assignee-input input:focus {
+    background: var(--bg-card);
+    border-color: var(--primary);
+    outline: none;
+}
+
+.refresh-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: var(--primary-light);
+    color: var(--primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.refresh-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Tasks Table */
+.tasks-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tasks-table th,
+.tasks-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.tasks-table th {
+    background: var(--bg-hover);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.tasks-table tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+.tasks-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.task-name {
+    font-weight: 500;
+}
+
+.tasks-table code {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: var(--bg-hover);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+}
+
+.assignee {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 12px;
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.assignee.unassigned {
+    background: var(--bg-hover);
+    color: var(--text-muted);
+}
+
+.actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.actions button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.actions button:hover {
+    background: var(--bg-card);
+    border-color: var(--text-muted);
+}
+
+.actions button.claim:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+}
+
+.actions button.complete:hover {
+    background: var(--success-light);
+    border-color: var(--success);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.empty-state span {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* ==================== TOAST ==================== */
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toast {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    box-shadow: var(--shadow-md);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.toast.success {
+    background: var(--success-light);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.toast.error {
+    background: var(--danger-light);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+/* ==================== MODAL ==================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-box {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow: auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.modal-header button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.modal-header button:hover {
+    color: var(--danger);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+/* Quick Decisions */
+.quick-decisions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.quick-decisions button {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-hover);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.quick-decisions button.approve:hover {
+    background: var(--success-light);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.quick-decisions button.reject:hover {
+    background: var(--danger-light);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+/* Task Variables */
+.task-vars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.var-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.var-row span {
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.var-row input {
+    flex: 1;
+}
+
+.var-row button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.var-row button:hover {
+    color: var(--danger);
+}
+
+.add-var {
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.add-var:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Modal Buttons */
+.modal-footer .cancel {
+    padding: 0.5rem 1rem;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+.modal-footer .cancel:hover {
+    background: var(--bg-card);
+}
+
+.modal-footer .submit {
+    padding: 0.5rem 1rem;
+    background: var(--success);
+    border: none;
+    color: white;
+    font-weight: 600;
+}
+
+.modal-footer .submit:hover:not(:disabled) {
+    background: #047857;
+}
+
+/* Variables Table */
+.vars-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.vars-table th,
+.vars-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+.vars-table th {
+    background: var(--bg-hover);
+    font-weight: 600;
+}
+
+.vars-table code {
+    font-size: 0.8rem;
+    word-break: break-all;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .start-left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .process-select {
+        max-width: none;
+    }
+
+    .tasks-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-input input,
+    .assignee-input input {
+        width: 100px;
+    }
+
+    .tasks-table th:nth-child(2),
+    .tasks-table td:nth-child(2) {
+        display: none;
+    }
+}

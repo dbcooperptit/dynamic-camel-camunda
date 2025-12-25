@@ -1,0 +1,221 @@
+/* BPMN Node Base Styles */
+.bpmn-node {
+    background: var(--bg-card, #1e293b);
+    border: 2px solid var(--border, #475569);
+    border-radius: 8px;
+    min-width: 140px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.bpmn-node.selected {
+    border-color: var(--primary, #6366f1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+.bpmn-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Node Header */
+.node-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border, #475569);
+    font-size: 0.75rem;
+    color: var(--text-muted, #94a3b8);
+}
+
+.node-icon {
+    font-size: 1rem;
+}
+
+.node-type {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Node Body */
+.node-body {
+    padding: 10px 12px;
+}
+
+.node-label {
+    font-weight: 600;
+    color: var(--text, #f8fafc);
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.node-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--text-muted, #94a3b8);
+    margin-top: 6px;
+}
+
+.meta-icon {
+    font-size: 0.7rem;
+}
+
+.delegate-expr {
+    font-family: 'Fira Code', monospace;
+    background: var(--bg-elevated, #334155);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+}
+
+/* Start Node */
+.start-node {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    border-color: #16a34a;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.start-node .node-icon {
+    font-size: 1.2rem;
+}
+
+.start-node .node-label {
+    font-size: 0.65rem;
+    color: white;
+    margin: 0;
+}
+
+/* End Node */
+.end-node {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-color: #dc2626;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.end-node .node-icon {
+    font-size: 1.2rem;
+}
+
+.end-node .node-label {
+    font-size: 0.65rem;
+    color: white;
+    margin: 0;
+}
+
+/* User Task Node */
+.user-task-node {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-color: #3b82f6;
+    border-left: 4px solid #3b82f6;
+}
+
+.user-task-node .node-header {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Service Task Node */
+.service-task-node {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-color: #f59e0b;
+    border-left: 4px solid #f59e0b;
+}
+
+.service-task-node .node-header {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+/* Gateway Node */
+.gateway-node {
+    background: transparent;
+    border: none;
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: none;
+}
+
+.gateway-node:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.gateway-diamond {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 2px solid #a855f7;
+    transform: rotate(45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+
+.gateway-node.exclusive .gateway-diamond {
+    border-color: #a855f7;
+}
+
+.gateway-node.parallel .gateway-diamond {
+    border-color: #06b6d4;
+}
+
+.gateway-symbol {
+    transform: rotate(-45deg);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text, #f8fafc);
+}
+
+.gateway-node .node-label {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted, #94a3b8);
+}
+
+.gateway-node.selected .gateway-diamond {
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.4);
+}
+
+/* Handles */
+.handle {
+    width: 12px !important;
+    height: 12px !important;
+    background: var(--primary, #6366f1) !important;
+    border: 2px solid var(--bg-card, #1e293b) !important;
+}
+
+.handle:hover {
+    background: var(--primary-dark, #4f46e5) !important;
+    transform: scale(1.2);
+}
+
+/* Gateway handles positioning */
+.gateway-node .handle {
+    background: #a855f7 !important;
+}
+
+.gateway-node .handle-top {
+    top: 25px;
+    right: -6px;
+}
