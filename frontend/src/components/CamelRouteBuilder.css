@@ -45,7 +45,9 @@
     padding: 0.6rem 0.8rem;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    cursor: pointer;
+    user-select: none;
+    outline: none;
     cursor: grab;
     transition: all 0.2s ease;
     font-size: 0.85rem;
@@ -61,6 +63,14 @@
 }
 
 .camel-palette-item.sample-route {
+.camel-eventlog-item:hover {
+    background: var(--bg-hover);
+}
+
+.camel-eventlog-item:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
+    border-radius: var(--radius);
+}
     cursor: pointer;
     background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
     border-left: 3px solid var(--primary);
@@ -108,12 +118,122 @@
     background: var(--bg-elevated);
 }
 
+.camel-canvas .react-flow {
+    height: 100%;
+}
+
+.camel-canvas-actions {
+    display: flex;
+    gap: 0.75rem;
+    background: var(--bg-card);
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.camel-route-builder .action-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.camel-route-builder .action-btn.deploy {
+    background: var(--success);
+    color: white;
+}
+
+.camel-route-builder .action-btn.deploy:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.camel-route-builder .action-btn.test {
+    background: var(--primary);
+    color: white;
+}
+
+.camel-route-builder .action-btn.test:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.camel-route-builder .action-btn.clear {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+
+.camel-route-builder .action-btn.clear:hover {
+    background: var(--bg-hover);
+    border-color: var(--text-muted);
+    color: var(--text);
+}
+
+.camel-status-overlay {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    z-index: 6;
+}
+
 /* Properties Panel */
 .camel-properties {
     background: var(--bg);
     border-left: 1px solid var(--border);
     padding: 1rem;
     overflow-y: auto;
+}
+
+.camel-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0 1rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+}
+
+.camel-panel-header h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.camel-close-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.camel-close-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border);
+    color: var(--text);
 }
 
 .camel-properties h3 {
@@ -151,6 +271,22 @@
 .property-group textarea {
     min-height: 60px;
     resize: vertical;
+}
+
+.camel-delete-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--danger);
+    color: white;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.camel-delete-btn:hover {
+    background: color-mix(in srgb, var(--danger) 90%, var(--bg-card));
+    box-shadow: var(--shadow-sm);
 }
 
 /* Action Buttons */
@@ -197,6 +333,217 @@
     color: var(--text-muted);
 }
 
+/* Toast */
+.camel-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    background: var(--bg-card);
+    color: var(--text);
+    animation: slideIn 0.2s ease-out;
+    max-width: min(520px, calc(100vw - 32px));
+}
+
+.camel-toast.success {
+    border-color: color-mix(in srgb, var(--success) 55%, var(--border));
+}
+
+.camel-toast.error {
+    border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+}
+
+.camel-toast.info {
+    border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+}
+
+.camel-toast-close {
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.camel-toast-close:hover {
+    background: var(--bg-hover);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(8px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Event Log Panel */
+.camel-eventlog {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 350px;
+    max-height: 200px;
+    background: color-mix(in srgb, var(--bg-card) 96%, transparent);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+    backdrop-filter: blur(6px);
+}
+
+.camel-eventlog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-hover);
+}
+
+.camel-eventlog-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.camel-eventlog-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.camel-eventlog-action {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+}
+
+.camel-eventlog-action:hover {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.camel-eventlog-list {
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.camel-eventlog-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+    gap: 8px;
+}
+
+.camel-eventlog-item:last-child {
+    border-bottom: none;
+}
+
+.camel-eventlog-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+    background: var(--primary);
+}
+
+.camel-eventlog-dot.ok {
+    background: var(--success);
+}
+
+.camel-eventlog-dot.failed {
+    background: var(--danger);
+}
+
+.camel-eventlog-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.camel-eventlog-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 2px;
+}
+
+.camel-eventlog-source {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.camel-eventlog-source.camunda {
+    color: var(--primary-dark);
+}
+
+.camel-eventlog-source.camel {
+    color: var(--primary);
+}
+
+.camel-eventlog-duration {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+}
+
+.camel-eventlog-message {
+    color: var(--text-secondary);
+    word-break: break-word;
+}
+
+.camel-eventlog-error {
+    color: var(--danger);
+    margin-top: 2px;
+}
+
+.camel-eventlog-toggle {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 8px 14px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: var(--shadow-sm);
+}
+
+.camel-eventlog-toggle:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
 /* Camel Node Styles */
 .camel-node {
     background: var(--bg-card, #1e293b);
@@ -210,6 +557,67 @@
 .camel-node.selected {
     border-color: var(--primary, #6366f1);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+/* Execution trace highlight (driven by SSE) */
+.camel-node.exec-started {
+    border-color: var(--warning);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 25%, transparent), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.camel-node.exec-completed {
+    border-color: var(--success);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 22%, transparent), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.camel-node.exec-failed {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 22%, transparent), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.camel-node .node-exec-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.camel-node .node-exec-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+}
+
+.camel-node .node-exec-badge.exec-started {
+    border-color: color-mix(in srgb, var(--warning) 45%, var(--border));
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 14%, var(--bg-elevated));
+}
+
+.camel-node .node-exec-badge.exec-completed {
+    border-color: color-mix(in srgb, var(--success) 45%, var(--border));
+    color: var(--success);
+    background: color-mix(in srgb, var(--success) 14%, var(--bg-elevated));
+}
+
+.camel-node .node-exec-badge.exec-failed {
+    border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 14%, var(--bg-elevated));
+}
+
+.camel-node .node-exec-duration {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: 'Fira Code', monospace;
 }
 
 .camel-node .node-header {
@@ -256,6 +664,27 @@
 .camel-node .node-header.delay {
     background: rgba(20, 184, 166, 0.2);
     color: #14b8a6;
+}
+
+/* Saga node headers (token-based) */
+.camel-node .node-header.debit {
+    background: color-mix(in srgb, var(--danger) 18%, transparent);
+    color: var(--danger);
+}
+
+.camel-node .node-header.credit {
+    background: color-mix(in srgb, var(--success) 18%, transparent);
+    color: var(--success);
+}
+
+.camel-node .node-header.sagatransfer {
+    background: color-mix(in srgb, var(--primary) 18%, transparent);
+    color: var(--primary);
+}
+
+.camel-node .node-header.compensate {
+    background: color-mix(in srgb, var(--warning) 18%, transparent);
+    color: var(--warning);
 }
 
 .camel-node .node-body {

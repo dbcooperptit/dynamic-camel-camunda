@@ -54,34 +54,36 @@ export default function DeploymentList({ refreshTrigger }: Props) {
             {error && <div className="error">❌ {error}</div>}
 
             {deployments.length > 0 ? (
-                <table className="deployments-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Deployment ID</th>
-                            <th>Deployed At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {deployments.map(d => (
-                            <tr key={d.id}>
-                                <td className="deployment-name">{d.name || 'N/A'}</td>
-                                <td><code>{d.id}</code></td>
-                                <td>{new Date(d.deploymentTime).toLocaleString()}</td>
-                                <td>
-                                    <button
-                                        onClick={() => handleDelete(d.id, d.name || d.id)}
-                                        className="delete-btn"
-                                        disabled={loading}
-                                    >
-                                        🗑️ Delete
-                                    </button>
-                                </td>
+                <div className="deployments-table-wrap">
+                    <table className="deployments-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Deployment ID</th>
+                                <th>Deployed At</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {deployments.map(d => (
+                                <tr key={d.id}>
+                                    <td className="deployment-name">{d.name || 'N/A'}</td>
+                                    <td><code>{d.id}</code></td>
+                                    <td>{new Date(d.deploymentTime).toLocaleString()}</td>
+                                    <td>
+                                        <button
+                                            onClick={() => handleDelete(d.id, d.name || d.id)}
+                                            className="delete-btn"
+                                            disabled={loading}
+                                        >
+                                            🗑️ Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
                 <p className="no-deployments">No deployments found</p>
             )}

@@ -135,6 +135,22 @@ export interface ActivityEvent {
     message?: string;
 }
 
+export interface TaskEvent {
+    taskId: string;
+    type: string;
+    status: 'STARTED' | 'COMPLETED' | 'FAILED';
+    message: string;
+    timestamp: number;
+    nodeType?: string;
+    routeId?: string;
+    processInstanceId?: string;
+    activityId?: string;
+    activityName?: string;
+    result?: unknown;
+    error?: string;
+    durationMs?: number;
+}
+
 // Delegate Discovery Types
 export interface ActionInfo {
     name: string;
@@ -148,4 +164,14 @@ export interface DelegateInfo {
     displayName: string;
     description: string;
     actions: ActionInfo[];
+}
+
+// Camel route info (lightweight for listing/testing)
+export interface CamelRouteInfo {
+    id: string;
+    name?: string;
+    description?: string;
+    status?: string;
+    tenantId?: string;
+    nodes?: unknown[];
 }

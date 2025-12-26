@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.ProducerTemplate;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
+import com.workflow.camunda.service.CamelDemoRouteService;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.Map;
 public class CamelDelegate implements JavaDelegate {
 
     private final ProducerTemplate producerTemplate;
+    private final CamelDemoRouteService camelDemoRouteService;
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -38,6 +40,16 @@ public class CamelDelegate implements JavaDelegate {
 
         log.info("CamelDelegate executing route: {} for process instance: {}",
                 routeName, execution.getProcessInstanceId());
+
+        // Demo convenience:
+        // If this is one of our known demo routes (e.g. callExternalApi, routeMessage, transformJson, orchestrate),
+        // make sure it's deployed before invocation.
+        // For non-demo routes, ensureDeployed() will throw IllegalArgumentException and we simply continue.
+        try {
+            camelDemoRouteService.ensureDeployed(routeName);
+        } catch (IllegalArgumentException ignored) {
+            // Not a known demo route; ignore.
+        }
 
         // Prepare input data - either from specific variable or all process variables
         Object inputData = execution.getVariable("camelRouteData");

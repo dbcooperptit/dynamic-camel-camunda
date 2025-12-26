@@ -15,11 +15,17 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    defer-datasource-initialization: true
+        dialect: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
   
   sql:
     init:
-      mode: always
+      mode: never
   
   h2:
     console:
@@ -75,5 +81,8 @@ logging:
     org.camunda: INFO
     org.springframework: INFO
     com.workflow: DEBUG
+    # Suppress normal SSE disconnection errors at servlet level
+    org.apache.catalina.connector.ClientAbortException: ERROR
+    org.apache.catalina.core.StandardWrapperValve: ERROR
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

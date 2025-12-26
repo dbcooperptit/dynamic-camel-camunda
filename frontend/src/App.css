@@ -185,6 +185,18 @@ body {
   background: var(--bg-hover);
   padding: 0.25rem;
   border-radius: var(--radius);
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
 }
 
 .tabs button {
@@ -255,12 +267,16 @@ button {
   border: 1px solid transparent;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition);
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
 
 button:focus {
+  outline: none;
+}
+
+button:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
@@ -300,6 +316,16 @@ label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85em;
+  background: var(--bg-hover);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.1rem 0.35rem;
 }
 
 /* Utilities */

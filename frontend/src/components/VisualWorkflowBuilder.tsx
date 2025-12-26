@@ -216,7 +216,9 @@ export default function VisualWorkflowBuilder({ onDeploySuccess }: Props) {
                     name: node.data.label,
                     type: node.data.stepType,
                     assignee: node.data.assignee,
+                    candidateGroups: node.data.candidateGroups,
                     delegateExpression: node.data.delegateExpression,
+                    delegateClass: node.data.delegateClass,
                     conditionExpression: node.data.conditionExpression,
                     nextSteps,
                     formKey: node.data.formKey,
@@ -438,26 +440,26 @@ export default function VisualWorkflowBuilder({ onDeploySuccess }: Props) {
                         markerEnd: { type: MarkerType.ArrowClosed },
                     }}
                 >
-                    <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#334155" />
+                    <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border)" />
                     <Controls position="bottom-left" />
                     <MiniMap
                         nodeColor={(node) => {
                             switch (node.type) {
                                 case 'startNode':
-                                    return '#22c55e';
+                                    return 'var(--success)';
                                 case 'endNode':
-                                    return '#ef4444';
+                                    return 'var(--danger)';
                                 case 'userTask':
-                                    return '#3b82f6';
+                                    return 'var(--primary)';
                                 case 'serviceTask':
-                                    return '#f59e0b';
+                                    return 'var(--warning)';
                                 case 'gateway':
-                                    return '#a855f7';
+                                    return 'var(--primary-dark)';
                                 default:
-                                    return '#64748b';
+                                    return 'var(--text-muted)';
                             }
                         }}
-                        style={{ background: '#0f172a' }}
+                        style={{ background: 'var(--bg)' }}
                     />
                     <Panel position="top-right" className="canvas-actions">
                         <button onClick={exportWorkflow} className="action-btn export" title="Export to JSON">

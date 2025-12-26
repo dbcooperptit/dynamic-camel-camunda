@@ -1,19 +1,28 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { TaskDto, ProcessStartResponse, ProcessDefinitionDto } from '../types';
+import type { TaskDto, ProcessStartResponse, ProcessDefinitionDto, TaskEvent, CamelRouteInfo } from '../types';
 import {
     listProcessDefinitions,
+    deployWorkflow,
     startProcess,
     getTasks,
     completeTask,
     getProcessStatus,
     getProcessVariables,
     claimTask,
-    unclaimTask
+    unclaimTask,
+    getNotificationHistory,
+    listCamelRoutes,
+    testCamelRoute,
+    deployCamelDemoRoutes
 } from '../api';
+import { API_BASE_URL } from '../api';
 import ProcessViewer from './ProcessViewer';
 import './WorkflowRunner.css';
+import { WORKFLOW_TEMPLATES } from '../workflowTemplates';
 
 export default function WorkflowRunner() {
+    const [activePanel, setActivePanel] = useState<'camunda' | 'camel'>('camunda');
+
     const [processDefinitions, setProcessDefinitions] = useState<ProcessDefinitionDto[]>([]);
     const [selectedProcess, setSelectedProcess] = useState('');
     const [assignee, setAssignee] = useState('admin');
@@ -23,6 +32,17 @@ export default function WorkflowRunner() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
+    const [taskEvents, setTaskEvents] = useState<TaskEvent[]>([]);
+    const [showEventLog, setShowEventLog] = useState(true);
+    const [camelEvents, setCamelEvents] = useState<TaskEvent[]>([]);
+    const [showCamelLog, setShowCamelLog] = useState(true);
+
+    // Camel routes
+    const [camelRoutes, setCamelRoutes] = useState<CamelRouteInfo[]>([]);
+    const [selectedCamelRoute, setSelectedCamelRoute] = useState('');
+    const [camelPayload, setCamelPayload] = useState<string>('{}');
+    const [camelResult, setCamelResult] = useState<string>('');
+    const [camelLoading, setCamelLoading] = useState(false);
 
     // Task completion modal
     const [completingTask, setCompletingTask] = useState<TaskDto | null>(null);
@@ -75,6 +95,57 @@ export default function WorkflowRunner() {
         }
     };
 
+    const CAMEL_SAMPLE_PAYLOADS: Record<string, unknown> = {
+        // === Dynamic Camel Route Builder templates ===
+        'simple-log': { message: 'Hello Camel from Runner!' },
+        'transform-json': { name: 'Camunda User', role: 'Developer', email: 'user@example.com' },
+        'filter-route': { amount: 1500, description: 'Test filter - amount > 1000 passes' },
+        'http-call': { endpoint: 'httpbin.org', action: 'get' },
+        'split-aggregate': { items: ['A', 'B', 'C', 'D', 'E'], separator: ',' },
+
+        // === Saga Money Transfer routes (body-based extraction) ===
+        'saga-transfer': {
+            sourceAccount: '1001234567',
+            destAccount: '1009876543',
+            amount: 500,
+            description: 'Chuyển khoản test',
+            transactionId: 'TX-' + Date.now()
+        },
+        'real-saga-transfer': {
+            sourceAccount: '1001234567',
+            destAccount: '1009876543',
+            amount: 1000000,
+            description: 'Chuyển khoản thực',
+            transactionId: 'TX-REAL-001'
+        },
+        'debit-credit-manual': {
+            sourceAccount: '1001234567',
+            destAccount: '1009876543',
+            amount: 5000,
+            description: 'Ghi nợ/ghi có thủ công'
+        },
+
+        // === Integration routes ===
+        callExternalApi: { message: 'Hello from Camel Runner!' },
+        callApiWithParams: { userId: '42', action: 'fetch' },
+        postToExternalApi: { title: 'Test Post', body: 'Sample post content', userId: 1 },
+
+        // === Routing routes ===
+        routeMessage: { priority: 'high', amount: 1500, message: 'Route me based on priority' },
+        filterMessage: { amount: 1200, description: 'Filter test - amount >= 1000' },
+        multicast: { message: 'Broadcast to all handlers', timestamp: new Date().toISOString() },
+
+        // === Transform routes ===
+        transformJson: { firstName: 'John', lastName: 'Doe', email: 'john@example.com' },
+        mapToXmlStructure: { customer: { id: 'C001', name: 'Alice', email: 'alice@example.com' } },
+        mapFields: { fName: 'John', lName: 'Doe', mail: 'john@example.com' },
+
+        // === Orchestration routes ===
+        orchestrate: { orderId: 'ORD-1001', userId: '42', items: ['item1', 'item2'] },
+        pipeline: { items: [1, 2, 3], action: 'process', mode: 'sequential' },
+        resilientCall: { id: 'test', retryCount: 3, timeout: 5000 },
+    };
+
     // Filter tasks
     const filteredTasks = useMemo(() => {
         if (!searchQuery.trim()) return tasks;
@@ -91,12 +162,56 @@ export default function WorkflowRunner() {
         loadProcessDefinitions();
     }, []);
 
+    // Load Camel routes once
+    useEffect(() => {
+        listCamelRoutes()
+            .then(setCamelRoutes)
+            .catch(() => setCamelRoutes([]));
+    }, []);
+
     const loadProcessDefinitions = async () => {
         try {
             const data = await listProcessDefinitions();
             setProcessDefinitions(data);
         } catch {
             setError('Failed to load process definitions');
+        }
+    };
+
+    const handleDeployCamelIntegrationDemo = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const tpl = WORKFLOW_TEMPLATES['camel-integration'];
+            await deployWorkflow({
+                processKey: tpl.processKey,
+                processName: tpl.processName,
+                description: tpl.description,
+                historyTimeToLive: 180,
+                steps: tpl.steps,
+            });
+            await loadProcessDefinitions();
+            setSelectedProcess(tpl.processKey);
+            setMessage(`✅ Deployed demo process: ${tpl.processKey}`);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to deploy demo process');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeployCamelDemoRoutes = async () => {
+        setCamelLoading(true);
+        setError(null);
+        try {
+            const result = await deployCamelDemoRoutes();
+            await listCamelRoutes().then(setCamelRoutes).catch(() => setCamelRoutes([]));
+            const deployedCount = result.deployed?.length ?? 0;
+            setMessage(`✅ Deployed ${deployedCount} Camel demo routes`);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to deploy Camel demo routes');
+        } finally {
+            setCamelLoading(false);
         }
     };
 
@@ -126,6 +241,51 @@ export default function WorkflowRunner() {
             return () => clearTimeout(timer);
         }
     }, [message]);
+
+    // Preload Camel run history and listen to backend task-event SSE
+    useEffect(() => {
+        getNotificationHistory({ type: 'CAMEL_NODE' })
+            .then(events => setCamelEvents(events.slice(0, 50)))
+            .catch(err => console.error('Failed to load Camel history', err));
+
+        const eventSource = new EventSource(`${API_BASE_URL}/api/notifications/stream`);
+
+        const handler = (event: MessageEvent) => {
+            try {
+                const data = JSON.parse(event.data) as TaskEvent;
+                const statusIcon = data.status === 'FAILED' ? '❌' : '✅';
+                const nodeInfo = data.nodeType ? `[${data.nodeType}] ` : '';
+                const label = data.message || data.activityName || data.taskId || 'Task';
+                const duration = data.durationMs ? ` (${data.durationMs}ms)` : '';
+                setMessage(`${statusIcon} ${nodeInfo}${label}${duration}`);
+
+                // Keep a short in-page log for recent events
+                setTaskEvents(prev => {
+                    const next = [{ ...data }, ...prev];
+                    return next.slice(0, 50);
+                });
+
+                if (data.type === 'CAMEL_NODE') {
+                    setCamelEvents(prev => {
+                        const deduped = prev.filter(ev => ev.timestamp !== data.timestamp || ev.taskId !== data.taskId);
+                        return [{ ...data }, ...deduped].slice(0, 50);
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to parse task-event', err);
+            }
+        };
+
+        eventSource.addEventListener('task-event', handler as EventListener);
+        eventSource.onerror = (e) => {
+            console.error('Task-event SSE error', e);
+        };
+
+        return () => {
+            eventSource.removeEventListener('task-event', handler as EventListener);
+            eventSource.close();
+        };
+    }, []);
 
     useEffect(() => {
         if (error) {
@@ -212,6 +372,49 @@ export default function WorkflowRunner() {
         }
     };
 
+    const handleRunCamelRoute = async () => {
+        if (!selectedCamelRoute) return;
+        setCamelLoading(true);
+        setCamelResult('');
+        try {
+            let payload: unknown = {};
+            if (camelPayload.trim()) {
+                try {
+                    payload = JSON.parse(camelPayload);
+                } catch (e) {
+                    setError('Payload phải là JSON hợp lệ');
+                    setCamelLoading(false);
+                    return;
+                }
+            }
+
+            const res = await testCamelRoute(selectedCamelRoute, payload);
+            setCamelResult(JSON.stringify(res, null, 2));
+            setMessage('✅ Camel route executed');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to run Camel route');
+        } finally {
+            setCamelLoading(false);
+        }
+    };
+
+    const applyCamelSample = () => {
+        if (!selectedCamelRoute) return;
+
+        const normalizedRouteId = selectedCamelRoute.includes('::')
+            ? selectedCamelRoute.split('::').slice(1).join('::')
+            : selectedCamelRoute;
+
+        const sample = CAMEL_SAMPLE_PAYLOADS[normalizedRouteId] ?? CAMEL_SAMPLE_PAYLOADS[selectedCamelRoute];
+        if (sample !== undefined) {
+            setCamelPayload(JSON.stringify(sample, null, 2));
+            return;
+        }
+
+        // Fallback sample so user can see it changed.
+        setCamelPayload(JSON.stringify({ routeId: normalizedRouteId, message: 'Test message' }, null, 2));
+    };
+
     const applyQuickFill = (preset: string) => {
         if (QUICK_FILL_PRESETS[preset]) {
             setVariables(QUICK_FILL_PRESETS[preset]);
@@ -226,7 +429,30 @@ export default function WorkflowRunner() {
                 {error && <div className="toast error">❌ {error}</div>}
             </div>
 
+            {/* Mode Switch */}
+            <div className="runner-tabs" role="tablist" aria-label="Runner mode">
+                <button
+                    type="button"
+                    className={`runner-tab ${activePanel === 'camunda' ? 'active' : ''}`}
+                    onClick={() => setActivePanel('camunda')}
+                    role="tab"
+                    aria-selected={activePanel === 'camunda'}
+                >
+                    ⚙️ Camunda
+                </button>
+                <button
+                    type="button"
+                    className={`runner-tab ${activePanel === 'camel' ? 'active' : ''}`}
+                    onClick={() => setActivePanel('camel')}
+                    role="tab"
+                    aria-selected={activePanel === 'camel'}
+                >
+                    🐪 Camel
+                </button>
+            </div>
+
             {/* Zone 1: Start Process - Compact Horizontal */}
+            {activePanel === 'camunda' && (
             <section className="start-zone">
                 <div className="start-row">
                     <div className="start-left">
@@ -261,6 +487,16 @@ export default function WorkflowRunner() {
                             </button>
                             <button onClick={() => applyQuickFill('camel-orchestrate')} className="quick-btn" title="Camel: Orchestration">
                                 🎭
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleDeployCamelIntegrationDemo}
+                                className="quick-btn"
+                                title="Deploy demo process: Camel Integration"
+                                disabled={loading}
+                            >
+                                📦🐪
                             </button>
                         </div>
                     </div>
@@ -315,8 +551,159 @@ export default function WorkflowRunner() {
                     </div>
                 )}
             </section>
+            )}
+
+            {/* Camel Runner */}
+            {activePanel === 'camel' && (
+                <section className="start-zone camel-runner-zone">
+                    <div className="start-row">
+                        <div className="start-left">
+                            <span className="zone-label">🐪 Camel Runner</span>
+
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={handleDeployCamelDemoRoutes}
+                                disabled={camelLoading}
+                            >
+                                📦 Deploy demo routes
+                            </button>
+
+                            <select
+                                value={selectedCamelRoute}
+                                onChange={e => setSelectedCamelRoute(e.target.value)}
+                                className="process-select"
+                            >
+                                <option value="">-- Select Camel route --</option>
+                                {camelRoutes.map(r => (
+                                    <option key={r.id} value={r.id}>
+                                        {r.name || r.id} {r.status ? `(${r.status})` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                            <textarea
+                                className="camel-payload"
+                                value={camelPayload}
+                                onChange={e => setCamelPayload(e.target.value)}
+                                placeholder="JSON payload"
+                            />
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={applyCamelSample}
+                                disabled={!selectedCamelRoute}
+                            >
+                                Sample
+                            </button>
+                        </div>
+                        <button
+                            onClick={handleRunCamelRoute}
+                            disabled={!selectedCamelRoute || camelLoading}
+                            className="start-btn"
+                        >
+                            {camelLoading ? '...' : '▶️ Run Camel'}
+                        </button>
+                    </div>
+                    {camelResult && (
+                        <pre className="camel-result">{camelResult}</pre>
+                    )}
+                </section>
+            )}
+
+            {/* Task Event Log */}
+            {activePanel === 'camunda' && taskEvents.length > 0 && (
+                <section className="task-event-log" style={{ marginTop: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3>🔔 Task Events ({taskEvents.length})</h3>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={() => setShowEventLog(s => !s)}>
+                                {showEventLog ? 'Hide' : 'Show'}
+                            </button>
+                            <button onClick={() => setTaskEvents([])}>Clear</button>
+                        </div>
+                    </div>
+                    {showEventLog && (
+                        <div className="task-event-log-list" style={{ marginTop: '12px', display: 'grid', gap: '8px' }}>
+                            {taskEvents.map((evt, idx) => {
+                                const statusIcon = evt.status === 'FAILED' ? '❌' : '✅';
+                                const nodeInfo = evt.nodeType ? `[${evt.nodeType}] ` : '';
+                                const time = new Date(evt.timestamp).toLocaleTimeString('vi-VN', { hour12: false });
+                                return (
+                                    <div key={`${evt.taskId || evt.activityId || 'evt'}-${evt.timestamp}-${idx}`}
+                                        style={{
+                                            padding: '10px 12px',
+                                            border: '1px solid #e0e0e0',
+                                            borderRadius: '8px',
+                                            background: evt.status === 'FAILED' ? '#fff4f4' : '#f7f9ff'
+                                        }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <strong>{statusIcon} {nodeInfo}{evt.message || evt.activityName || evt.taskId || 'Task'}</strong>
+                                                {evt.durationMs ? <span style={{ marginLeft: '6px', color: '#666' }}>({evt.durationMs}ms)</span> : null}
+                                            </div>
+                                            <span style={{ color: '#777', fontSize: '12px' }}>{time}</span>
+                                        </div>
+                                        <div style={{ marginTop: '4px', color: '#555', fontSize: '13px' }}>
+                                            {evt.processInstanceId ? `PI: ${evt.processInstanceId}` : ''}
+                                            {evt.activityId ? ` • Activity: ${evt.activityId}` : ''}
+                                            {evt.error ? ` • Error: ${evt.error}` : ''}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </section>
+            )}
+
+            {/* Camel Run Log */}
+            {activePanel === 'camel' && camelEvents.length > 0 && (
+                <section className="task-event-log" style={{ marginTop: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3>🐪 Camel Runs ({camelEvents.length})</h3>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={() => setShowCamelLog(s => !s)}>
+                                {showCamelLog ? 'Hide' : 'Show'}
+                            </button>
+                            <button onClick={() => setCamelEvents([])}>Clear</button>
+                        </div>
+                    </div>
+                    {showCamelLog && (
+                        <div className="task-event-log-list" style={{ marginTop: '12px', display: 'grid', gap: '8px' }}>
+                            {camelEvents.map((evt, idx) => {
+                                const statusIcon = evt.status === 'FAILED' ? '❌' : '✅';
+                                const nodeInfo = evt.nodeType ? `[${evt.nodeType}] ` : '';
+                                const time = new Date(evt.timestamp).toLocaleTimeString('vi-VN', { hour12: false });
+                                return (
+                                    <div key={`${evt.taskId || evt.activityId || 'camel'}-${evt.timestamp}-${idx}`}
+                                        style={{
+                                            padding: '10px 12px',
+                                            border: '1px solid #e0e0e0',
+                                            borderRadius: '8px',
+                                            background: evt.status === 'FAILED' ? '#fff4f4' : '#f6fff7'
+                                        }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <strong>{statusIcon} {nodeInfo}{evt.message || evt.taskId || 'Camel step'}</strong>
+                                                {evt.durationMs ? <span style={{ marginLeft: '6px', color: '#666' }}>({evt.durationMs}ms)</span> : null}
+                                            </div>
+                                            <span style={{ color: '#777', fontSize: '12px' }}>{time}</span>
+                                        </div>
+                                        <div style={{ marginTop: '4px', color: '#555', fontSize: '13px' }}>
+                                            {evt.routeId ? `Route: ${evt.routeId}` : ''}
+                                            {evt.processInstanceId ? ` • PI: ${evt.processInstanceId}` : ''}
+                                            {evt.error ? ` • Error: ${evt.error}` : ''}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </section>
+            )}
 
             {/* Zone 2: Tasks Table */}
+            {activePanel === 'camunda' && (
             <section className="tasks-zone">
                 <div className="tasks-header">
                     <h2>📋 Tasks <span className="count-badge">{filteredTasks.length}</span></h2>
@@ -402,9 +789,10 @@ export default function WorkflowRunner() {
                     </div>
                 )}
             </section>
+            )}
 
             {/* Complete Task Modal */}
-            {completingTask && (
+            {activePanel === 'camunda' && completingTask && (
                 <div className="modal-overlay" onClick={() => setCompletingTask(null)}>
                     <div className="modal-box" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
@@ -451,7 +839,7 @@ export default function WorkflowRunner() {
             )}
 
             {/* Variables Panel Modal */}
-            {showVariablesPanel && (
+            {activePanel === 'camunda' && showVariablesPanel && (
                 <div className="modal-overlay" onClick={() => setShowVariablesPanel(false)}>
                     <div className="modal-box" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
@@ -484,7 +872,7 @@ export default function WorkflowRunner() {
             )}
 
             {/* Process Viewer Modal */}
-            {viewingProcessId && (
+            {activePanel === 'camunda' && viewingProcessId && (
                 <ProcessViewer
                     processInstanceId={viewingProcessId}
                     onClose={() => setViewingProcessId(null)}

@@ -16,6 +16,7 @@
 - Java 21
 - Maven 3.6+
 - Docker & Docker Compose (optional)
+- Node.js (Frontend): >=20.19.0 (khuyến nghị 22.12.0 LTS)
 
 ## 🏃 Chạy ứng dụng
 
@@ -36,6 +37,22 @@ mvn spring-boot:run
 ```powershell
 docker-compose up --build
 ```
+
+## 🧩 Frontend (React)
+
+Trong thư mục `frontend/`:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+### Frontend env vars
+
+- `VITE_API_BASE_URL` (mặc định `http://localhost:8080`)
+- `VITE_TENANT_ID` (optional) → gửi header `X-Tenant-Id`
+- `VITE_API_KEY` (optional) → gửi header `X-API-Key` (chỉ áp dụng cho `/api/camel-routes` nếu backend bật API key)
 
 ## 🌐 Truy cập Web UIs
 

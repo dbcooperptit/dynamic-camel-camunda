@@ -74,8 +74,12 @@
 
 /* Start Node */
 .start-node {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-    border-color: #16a34a;
+    background: linear-gradient(
+        135deg,
+        var(--success) 0%,
+        color-mix(in srgb, var(--success) 75%, black) 100%
+    );
+    border-color: color-mix(in srgb, var(--success) 75%, black);
     border-radius: 50%;
     width: 60px;
     height: 60px;
@@ -99,8 +103,12 @@
 
 /* End Node */
 .end-node {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    border-color: #dc2626;
+    background: linear-gradient(
+        135deg,
+        var(--danger) 0%,
+        color-mix(in srgb, var(--danger) 75%, black) 100%
+    );
+    border-color: color-mix(in srgb, var(--danger) 75%, black);
     border-radius: 50%;
     width: 60px;
     height: 60px;

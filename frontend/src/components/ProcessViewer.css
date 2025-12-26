@@ -18,7 +18,7 @@
     width: 95%;
     max-width: 1400px;
     height: 90vh;
-    background: var(--bg-primary, #ffffff);
+    background: var(--bg-card);
     border-radius: 12px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     display: flex;
@@ -31,14 +31,14 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 24px;
-    border-bottom: 1px solid var(--border, #e5e7eb);
-    background: var(--bg-secondary, #f9fafb);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-hover);
 }
 
 .process-viewer-header h2 {
     margin: 0;
     font-size: 1.25rem;
-    color: var(--text-primary, #111827);
+    color: var(--text);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -50,14 +50,15 @@
 
 .process-id {
     font-size: 0.75rem;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
     font-family: 'Fira Code', monospace;
-    background: var(--bg-primary, #ffffff);
+    background: var(--bg-card);
     padding: 4px 8px;
     border-radius: 4px;
+    border: 1px solid var(--border);
 }
 
-.close-btn {
+.process-viewer .close-btn {
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -65,10 +66,12 @@
     padding: 8px;
     border-radius: 8px;
     transition: background 0.2s;
+    color: var(--text-secondary);
 }
 
-.close-btn:hover {
-    background: var(--bg-hover, #f3f4f6);
+.process-viewer .close-btn:hover {
+    background: var(--bg);
+    color: var(--text);
 }
 
 .process-viewer-content {
@@ -82,13 +85,13 @@
     flex: 2;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--border, #e5e7eb);
+    border-right: 1px solid var(--border);
 }
 
 .diagram-container {
     flex: 1;
     position: relative;
-    background: #fafafa;
+    background: var(--bg);
 }
 
 .diagram-container .bjs-container {
@@ -104,14 +107,14 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
 }
 
 .diagram-loading .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid var(--border, #e5e7eb);
-    border-top-color: var(--primary, #3b82f6);
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -126,8 +129,8 @@
     display: flex;
     gap: 16px;
     padding: 12px 16px;
-    background: var(--bg-secondary, #f9fafb);
-    border-top: 1px solid var(--border, #e5e7eb);
+    background: var(--bg-hover);
+    border-top: 1px solid var(--border);
     font-size: 0.8rem;
 }
 
@@ -144,17 +147,17 @@
 }
 
 .legend-dot.current {
-    background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    background: var(--success);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--success) 55%, transparent);
     animation: pulse 1.5s ease-in-out infinite;
 }
 
 .legend-dot.completed {
-    background: #3b82f6;
+    background: var(--primary);
 }
 
 .legend-dot.pending {
-    background: #9ca3af;
+    background: var(--text-muted);
 }
 
 @keyframes pulse {
@@ -177,12 +180,12 @@
     min-width: 350px;
     display: flex;
     flex-direction: column;
-    background: var(--bg-primary, #ffffff);
+    background: var(--bg-card);
 }
 
 .log-header {
     padding: 16px;
-    border-bottom: 1px solid var(--border, #e5e7eb);
+    border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -197,7 +200,7 @@
 }
 
 .activity-count {
-    background: var(--primary, #3b82f6);
+    background: var(--primary);
     color: white;
     font-size: 0.75rem;
     padding: 2px 8px;
@@ -213,28 +216,28 @@
 .log-item {
     padding: 12px;
     margin-bottom: 8px;
-    background: var(--bg-secondary, #f9fafb);
+    background: var(--bg-hover);
     border-radius: 8px;
-    border-left: 3px solid var(--border, #e5e7eb);
+    border-left: 3px solid var(--border);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .log-item:hover {
-    background: var(--bg-hover, #f3f4f6);
+    background: var(--bg);
 }
 
 .log-item.start {
-    border-left-color: #22c55e;
+    border-left-color: var(--success);
 }
 
 .log-item.end {
-    border-left-color: #3b82f6;
+    border-left-color: var(--primary);
 }
 
 .log-item.current {
-    border-left-color: #22c55e;
-    background: rgba(34, 197, 94, 0.1);
+    border-left-color: var(--success);
+    background: color-mix(in srgb, var(--success) 12%, var(--bg-hover));
 }
 
 .log-item-header {
@@ -247,13 +250,13 @@
 .log-item-type {
     font-size: 0.7rem;
     text-transform: uppercase;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
     font-weight: 600;
 }
 
 .log-item-time {
     font-size: 0.7rem;
-    color: var(--text-muted, #6b7280);
+    color: var(--text-muted);
     font-family: 'Fira Code', monospace;
 }
 

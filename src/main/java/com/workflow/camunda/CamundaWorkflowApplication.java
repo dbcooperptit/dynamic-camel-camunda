@@ -2,6 +2,7 @@ package com.workflow.camunda;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Camunda BPM Workflow Application
@@ -19,6 +20,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * - Password: admin
  */
 @SpringBootApplication
+@EnableScheduling
 public class CamundaWorkflowApplication {
 
     public static void main(String[] args) {

@@ -72,7 +72,7 @@ export const WORKFLOW_TEMPLATES: Record<string, WorkflowTemplate> = {
             { id: 'call_api', name: 'Call External API', type: 'SERVICE_TASK', delegateExpression: '${camelDelegate}', nextSteps: ['merge_gateway'], variables: { action: 'callExternalApi', camelRoute: 'callExternalApi' } },
             { id: 'route_message', name: 'Route Message', type: 'SERVICE_TASK', delegateExpression: '${camelDelegate}', nextSteps: ['merge_gateway'], variables: { action: 'routeMessage', camelRoute: 'routeMessage' } },
             { id: 'transform_json', name: 'Transform JSON', type: 'SERVICE_TASK', delegateExpression: '${camelDelegate}', nextSteps: ['merge_gateway'], variables: { action: 'transformJson', camelRoute: 'transformJson' } },
-            { id: 'orchestrate', name: 'Orchestrate Services', type: 'SERVICE_TASK', delegateExpression: '${camelDelegate}', nextSteps: ['merge_gateway'], variables: { action: 'routeMessage', camelRoute: 'orchestrate' } },
+            { id: 'orchestrate', name: 'Orchestrate Services', type: 'SERVICE_TASK', delegateExpression: '${camelDelegate}', nextSteps: ['merge_gateway'], variables: { action: 'orchestrate', camelRoute: 'orchestrate' } },
             { id: 'merge_gateway', name: 'Merge', type: 'EXCLUSIVE_GATEWAY', nextSteps: ['review_result'] },
             { id: 'review_result', name: 'Xem kết quả', type: 'USER_TASK', assignee: 'demo', nextSteps: [] },
         ],

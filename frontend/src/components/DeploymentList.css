@@ -3,6 +3,7 @@
     padding: 1.5rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
+    border: 1px solid var(--border);
 }
 
 .list-header {
@@ -17,13 +18,30 @@
 }
 
 .list-header button {
-    background: var(--bg-elevated);
+    background: var(--bg-hover);
     color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+}
+
+.list-header button:hover:not(:disabled) {
+    background: var(--bg-card);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.deployments-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
 }
 
 .deployments-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 820px;
 }
 
 .deployments-table th,
@@ -43,14 +61,14 @@
 }
 
 .deployments-table tbody tr:hover {
-    background: var(--bg);
+    background: var(--bg-hover);
 }
 
 .deployment-name {
     font-weight: 600;
 }
 
-.delete-btn {
+.deployment-list .delete-btn {
     background: transparent;
     color: var(--danger);
     border: 1px solid var(--danger);
@@ -58,7 +76,7 @@
     font-size: 0.8rem;
 }
 
-.delete-btn:hover:not(:disabled) {
+.deployment-list .delete-btn:hover:not(:disabled) {
     background: var(--danger);
     color: white;
 }

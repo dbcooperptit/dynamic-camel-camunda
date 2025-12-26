@@ -7,6 +7,40 @@
     position: relative;
 }
 
+/* In-runner tabs (Camunda vs Camel) */
+.runner-tabs {
+    display: inline-flex;
+    gap: 0.25rem;
+    background: var(--bg-hover);
+    padding: 0.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    width: fit-content;
+}
+
+.runner-tab {
+    padding: 0.5rem 0.9rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    transition: all var(--transition);
+}
+
+.runner-tab:hover {
+    background: var(--bg-card);
+    color: var(--text);
+}
+
+.runner-tab.active {
+    background: var(--bg-card);
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
 /* ==================== ZONE 1: Start Process ==================== */
 .start-zone {
     background: var(--bg-card);
@@ -82,6 +116,65 @@
 .start-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Secondary button (uses existing theme tokens) */
+.btn-secondary {
+    padding: 0.5rem 1.25rem;
+    background: var(--bg-hover);
+    color: var(--text);
+    font-weight: 600;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    white-space: nowrap;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--primary-light);
+    border-color: var(--primary);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Camel Runner */
+.camel-runner-zone {
+    margin-top: 1rem;
+}
+
+.camel-payload {
+    flex: 1;
+    min-width: 240px;
+    min-height: 44px;
+    max-height: 140px;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-hover);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.85rem;
+    resize: vertical;
+}
+
+.camel-payload:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.camel-result {
+    margin-top: 0.75rem;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem;
+    max-height: 240px;
+    overflow: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.85rem;
 }
 
 /* Variables Row */
@@ -589,7 +682,8 @@
 }
 
 .modal-footer .submit:hover:not(:disabled) {
-    background: #047857;
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
 }
 
 /* Variables Table */

@@ -115,8 +115,7 @@
 
 /* Canvas */
 .builder-canvas {
-    background: #f8fafc;
-    /* Light canvas background */
+    background: var(--bg);
     position: relative;
     /* Dot pattern handled by React Flow Background component */
 }
@@ -135,7 +134,7 @@
     box-shadow: var(--shadow);
 }
 
-.action-btn {
+.visual-workflow-builder .action-btn {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
     border-radius: var(--radius-sm);
@@ -148,33 +147,33 @@
     gap: 0.4rem;
 }
 
-.action-btn.preview {
+.visual-workflow-builder .action-btn.preview {
     background: var(--bg);
     color: var(--text);
     border: 1px solid var(--border);
 }
 
-.action-btn.preview:hover {
+.visual-workflow-builder .action-btn.preview:hover {
     background: var(--bg-hover);
     border-color: var(--text-muted);
 }
 
-.action-btn.deploy {
+.visual-workflow-builder .action-btn.deploy {
     background: var(--primary);
     color: white;
 }
 
-.action-btn.deploy:hover {
+.visual-workflow-builder .action-btn.deploy:hover {
     background: var(--primary-dark);
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
 }
 
-.action-btn.clear {
+.visual-workflow-builder .action-btn.clear {
     background: transparent;
     color: var(--text-muted);
 }
 
-.action-btn.clear:hover {
+.visual-workflow-builder .action-btn.clear:hover {
     color: var(--danger);
     background: var(--danger-light);
 }
@@ -204,7 +203,7 @@
     color: var(--text);
 }
 
-.close-btn {
+.visual-workflow-builder .close-btn {
     width: 32px;
     height: 32px;
     padding: 0;
@@ -219,7 +218,7 @@
     transition: all 0.2s;
 }
 
-.close-btn:hover {
+.visual-workflow-builder .close-btn:hover {
     background: var(--bg);
     color: var(--text);
 }
@@ -240,7 +239,7 @@
     border-top: 1px solid var(--border);
 }
 
-.delete-btn {
+.visual-workflow-builder .delete-btn {
     width: 100%;
     padding: 0.75rem;
     background: white;
@@ -251,7 +250,7 @@
     border-radius: var(--radius);
 }
 
-.delete-btn:hover {
+.visual-workflow-builder .delete-btn:hover {
     background: var(--danger);
     color: white;
 }
@@ -311,14 +310,14 @@
 
 /* Export/Import buttons */
 .action-btn.export,
-.action-btn.import {
-    background: var(--bg);
+.visual-workflow-builder .action-btn.export,
+.visual-workflow-builder .action-btn.import {
     color: var(--text);
     border: 1px solid var(--border);
 }
 
 .action-btn.export:hover,
-.action-btn.import:hover {
-    background: var(--bg-hover);
+.visual-workflow-builder .action-btn.export:hover,
+.visual-workflow-builder .action-btn.import:hover {
     border-color: var(--text-muted);
 }

@@ -20,6 +20,18 @@ import java.util.Map;
 public class CamelRouteDefinition {
 
     /**
+     * Schema version of this definition payload.
+     * Used for backward-compatible migrations when persisted definitions evolve.
+     */
+    private Integer schemaVersion;
+
+    /**
+     * Optional tenant identifier for scoping routes.
+     * If omitted, backend will treat it as "default".
+     */
+    private String tenantId;
+
+    /**
      * Unique route identifier
      */
     private String id;
@@ -119,8 +131,20 @@ public class CamelRouteDefinition {
         private String id;
         private String source;
         private String target;
+        /**
+         * Optional ReactFlow handle id used by the visual builder (e.g. "when", "otherwise", "try", "catch").
+         * This keeps the routing model fully dynamic without requiring static route code.
+         */
+        private String sourceHandle;
+        private String targetHandle;
         private String label;
         private String condition;
+
+        /**
+         * Optional exception type (fully qualified class name) for try/catch edges.
+         * Example: "java.lang.IllegalArgumentException".
+         */
+        private String exceptionType;
     }
 
     /**

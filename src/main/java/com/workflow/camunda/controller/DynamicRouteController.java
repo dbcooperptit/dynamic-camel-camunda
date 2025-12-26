@@ -22,6 +22,9 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class DynamicRouteController {
 
+    private static final String TENANT_HEADER = "X-Tenant-Id";
+    private static final String DEFAULT_TENANT = "default";
+
     private final DynamicRouteService dynamicRouteService;
     private final ProducerTemplate producerTemplate;
 
@@ -29,8 +32,14 @@ public class DynamicRouteController {
      * Deploy a new route from JSON definition
      */
     @PostMapping
-    public ResponseEntity<?> deployRoute(@RequestBody CamelRouteDefinition definition) {
+    public ResponseEntity<?> deployRoute(
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenantId,
+            @RequestBody CamelRouteDefinition definition) {
         try {
+            String tid = (tenantId == null || tenantId.isBlank()) ? DEFAULT_TENANT : tenantId.trim();
+            if (definition.getTenantId() == null || definition.getTenantId().isBlank()) {
+                definition.setTenantId(tid);
+            }
             log.info("Deploying route: {} ({})", definition.getName(), definition.getId());
             CamelRouteDefinition deployed = dynamicRouteService.deployRoute(definition);
             return ResponseEntity.ok(Map.of(
@@ -49,16 +58,21 @@ public class DynamicRouteController {
      * Get all deployed routes
      */
     @GetMapping
-    public ResponseEntity<List<CamelRouteDefinition>> getAllRoutes() {
-        return ResponseEntity.ok(dynamicRouteService.getAllRoutes());
+    public ResponseEntity<List<CamelRouteDefinition>> getAllRoutes(
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenantId) {
+        String tid = (tenantId == null || tenantId.isBlank()) ? DEFAULT_TENANT : tenantId.trim();
+        return ResponseEntity.ok(dynamicRouteService.getAllRoutes(tid));
     }
 
     /**
      * Get a specific route by ID
      */
     @GetMapping("/{routeId}")
-    public ResponseEntity<?> getRoute(@PathVariable String routeId) {
-        return dynamicRouteService.getRoute(routeId)
+    public ResponseEntity<?> getRoute(
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenantId,
+            @PathVariable String routeId) {
+        String tid = (tenantId == null || tenantId.isBlank()) ? DEFAULT_TENANT : tenantId.trim();
+        return dynamicRouteService.getRoute(routeId, tid)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -67,9 +81,12 @@ public class DynamicRouteController {
      * Delete a route
      */
     @DeleteMapping("/{routeId}")
-    public ResponseEntity<?> deleteRoute(@PathVariable String routeId) {
+    public ResponseEntity<?> deleteRoute(
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenantId,
+            @PathVariable String routeId) {
         try {
-            dynamicRouteService.deleteRoute(routeId);
+            String tid = (tenantId == null || tenantId.isBlank()) ? DEFAULT_TENANT : tenantId.trim();
+            dynamicRouteService.deleteRoute(routeId, tid);
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Route deleted: " + routeId));
@@ -85,9 +102,12 @@ public class DynamicRouteController {
      * Start a stopped route
      */
     @PostMapping("/{routeId}/start")
-    public ResponseEntity<?> startRoute(@PathVariable String routeId) {
+    public ResponseEntity<?> startRoute(
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenantId,
+            @PathVariable String routeId) {
         try {
-            dynamicRouteService.startRoute(routeId);
+            String tid = (tenantId == null || tenantId.isBlank()) ? DEFAULT_TENANT : tenantId.trim();
+            dynamicRouteService.startRoute(routeId, tid);
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Route started: " + routeId));
@@ -103,9 +123,12 @@ public class DynamicRouteController {
      * Stop a running route
      */
     @PostMapping("/{routeId}/stop")
-    public ResponseEntity<?> stopRoute(@PathVariable String routeId) {
+    public ResponseEntity<?> stopRoute(
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenantId,
+            @PathVariable String routeId) {
         try {
-            dynamicRouteService.stopRoute(routeId);
+            String tid = (tenantId == null || tenantId.isBlank()) ? DEFAULT_TENANT : tenantId.trim();
+            dynamicRouteService.stopRoute(routeId, tid);
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Route stopped: " + routeId));
@@ -122,11 +145,13 @@ public class DynamicRouteController {
      */
     @PostMapping("/{routeId}/test")
     public ResponseEntity<?> testRoute(
+            @RequestHeader(value = TENANT_HEADER, required = false) String tenantId,
             @PathVariable String routeId,
             @RequestBody(required = false) Object body) {
         try {
+            String tid = (tenantId == null || tenantId.isBlank()) ? DEFAULT_TENANT : tenantId.trim();
             // Find the route's from URI
-            CamelRouteDefinition def = dynamicRouteService.getRoute(routeId)
+            CamelRouteDefinition def = dynamicRouteService.getRoute(routeId, tid)
                     .orElseThrow(() -> new IllegalArgumentException("Route not found: " + routeId));
 
             // Find the from node to get the endpoint

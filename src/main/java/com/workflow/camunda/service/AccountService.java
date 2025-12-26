@@ -157,9 +157,13 @@ public class AccountService {
     public void compensateDebit(String accountNumber, BigDecimal amount, String transactionId) {
         log.warn("🔄 SAGA COMPENSATION: Reversing debit for TxnId={}", transactionId);
 
-        // Get transaction to verify it needs compensation
-        Transaction transaction = transactionRepository.findByTransactionId(transactionId)
-                .orElseThrow(() -> new IllegalArgumentException("Transaction not found: " + transactionId));
+        // Handle case where transaction doesn't exist (no-op compensation)
+        Optional<Transaction> txnOpt = transactionRepository.findByTransactionId(transactionId);
+        if (txnOpt.isEmpty()) {
+            log.warn("⚠️ Transaction not found: {}. Nothing to compensate.", transactionId);
+            return;
+        }
+        Transaction transaction = txnOpt.get();
 
         if (!"DEBITED".equals(transaction.getSagaState())) {
             log.warn("⚠️ Transaction not in DEBITED state, skipping compensation");

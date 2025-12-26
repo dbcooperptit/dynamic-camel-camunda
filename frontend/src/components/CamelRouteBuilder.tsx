@@ -10,19 +10,17 @@ import {
     BackgroundVariant,
     Panel,
     MarkerType,
-    applyNodeChanges,
-    applyEdgeChanges,
     type Connection,
     type Edge,
     type Node,
-    type NodeChange,
-    type EdgeChange,
+    type ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { camelNodeTypes, type CamelNodeData } from './nodes/CamelNodes';
 import './CamelRouteBuilder.css';
-import { API_BASE } from '../api';
+import { API_BASE_URL, buildApiHeaders, getNotificationHistory } from '../api';
+import type { TaskEvent } from '../types';
 
 // Node templates for palette
 const NODE_TEMPLATES = [
@@ -62,23 +60,9 @@ export interface RouteTemplate {
 
 // Simple Toast Component
 const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error' | 'info', onClose: () => void }) => (
-    <div style={{
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        backgroundColor: type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3',
-        color: 'white',
-        padding: '12px 24px',
-        borderRadius: '4px',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        animation: 'slideIn 0.3s ease-out'
-    }}>
+    <div className={`camel-toast ${type}`}>
         <span>{message}</span>
-        <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', fontSize: '16px' }}>&times;</button>
+        <button onClick={onClose} className="camel-toast-close" aria-label="Close toast">×</button>
     </div>
 );
 
@@ -303,12 +287,15 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
             { id: 'e-err2', source: 'compensate-1', target: 'log-error' },
         ],
         testData: {
-            "headers": {
-                "amount": 5000
-            }
+            "sourceAccount": "1001234567",
+            "destAccount": "1009876543",
+            "amount": 5000,
+            "description": "Ghi nợ/ghi có thủ công"
         }
     },
 ];
+
+type UiTaskEvent = TaskEvent & { id: string };
 
 interface DeployedRoute {
     id: string;
@@ -318,14 +305,70 @@ interface DeployedRoute {
 
 export default function CamelRouteBuilder() {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
+    const reactFlowInstanceRef = useRef<ReactFlowInstance<Node<CamelNodeData>, Edge> | null>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState<Node<CamelNodeData>>(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const [selectedNode, setSelectedNode] = useState<Node<CamelNodeData> | null>(null);
+    const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+
+    const nodesRef = useRef<Node<CamelNodeData>[]>(nodes);
+    useEffect(() => {
+        nodesRef.current = nodes;
+    }, [nodes]);
+
+    const clearExecTimeoutsRef = useRef<Record<string, number>>({});
+
+    const setNodeExecutionState = useCallback((nodeId: string, status: 'STARTED' | 'COMPLETED' | 'FAILED', durationMs?: number) => {
+        setNodes((nds) => nds.map((n) => {
+            if (n.id !== nodeId) return n;
+            return {
+                ...n,
+                data: {
+                    ...n.data,
+                    execStatus: status,
+                    lastDurationMs: typeof durationMs === 'number' ? durationMs : n.data.lastDurationMs,
+                    lastExecutedAt: Date.now(),
+                },
+            };
+        }));
+
+        const prev = clearExecTimeoutsRef.current[nodeId];
+        if (prev) {
+            window.clearTimeout(prev);
+            delete clearExecTimeoutsRef.current[nodeId];
+        }
+
+        // Auto-clear highlight after a short period (keep it visible enough to feel "alive")
+        const ttlMs = status === 'STARTED' ? 15000 : 4000;
+        clearExecTimeoutsRef.current[nodeId] = window.setTimeout(() => {
+            setNodes((nds) => nds.map((n) => {
+                if (n.id !== nodeId) return n;
+                return {
+                    ...n,
+                    data: {
+                        ...n.data,
+                        execStatus: undefined,
+                    },
+                };
+            }));
+            delete clearExecTimeoutsRef.current[nodeId];
+        }, ttlMs);
+    }, [setNodes]);
+
+    const getEdgeMeta = (edge: Edge) => {
+        const anyEdge = edge as unknown as { data?: any; label?: any; sourceHandle?: any };
+        return {
+            label: typeof anyEdge.label === 'string' ? anyEdge.label : (anyEdge.data?.label as string | undefined),
+            condition: (anyEdge.data?.condition as string | undefined) ?? undefined,
+            exceptionType: (anyEdge.data?.exceptionType as string | undefined) ?? undefined,
+            sourceHandle: (anyEdge.sourceHandle as string | undefined) ?? undefined,
+        };
+    };
 
     // Route metadata
     const [routeId, setRouteId] = useState('my-route');
     const [routeName, setRouteName] = useState('My Dynamic Route');
-    const [routeDescription, setRouteDescription] = useState('My dynamic Camel route');
+    const [routeDescription] = useState('My dynamic Camel route');
     const [testPayload, setTestPayload] = useState('{}');
 
     // UI state
@@ -334,12 +377,38 @@ export default function CamelRouteBuilder() {
     const [deployedRoutes, setDeployedRoutes] = useState<DeployedRoute[]>([]);
 
     // SSE State - store events for event log panel
-    const [taskEvents, setTaskEvents] = useState<any[]>([]);
+    const [taskEvents, setTaskEvents] = useState<UiTaskEvent[]>([]);
     const [showEventLog, setShowEventLog] = useState(true);
+
+    const buildEventId = useCallback((evt: TaskEvent) => {
+        const parts = [
+            evt.routeId || '',
+            evt.processInstanceId || '',
+            evt.taskId || '',
+            evt.status || '',
+            String(evt.timestamp),
+            evt.message || ''
+        ];
+        return parts.join('|');
+    }, []);
+
+    const normalizeEvent = useCallback((evt: TaskEvent): UiTaskEvent => ({
+        ...evt,
+        id: buildEventId(evt),
+    }), [buildEventId]);
+
+    useEffect(() => {
+        getNotificationHistory({ type: 'CAMEL_NODE' })
+            .then(events => {
+                const normalized = events.map(normalizeEvent).slice(0, 50);
+                setTaskEvents(normalized);
+            })
+            .catch(err => console.error('Failed to load notification history', err));
+    }, [normalizeEvent]);
 
     useEffect(() => {
         // Connect to SSE stream
-        const eventSource = new EventSource(`${API_BASE}/api/notifications/stream`);
+        const eventSource = new EventSource(`${API_BASE_URL}/api/notifications/stream`);
 
         eventSource.onopen = () => {
             console.log("SSE Connected");
@@ -347,18 +416,31 @@ export default function CamelRouteBuilder() {
 
         eventSource.addEventListener("task-event", (event: MessageEvent) => {
             try {
-                const data = JSON.parse(event.data);
+                const data = JSON.parse(event.data) as TaskEvent;
+                const normalized = normalizeEvent(data);
                 console.log("SSE Event:", data);
 
-                // Add to events list (keep last 50)
-                setTaskEvents(prev => [
-                    { ...data, id: Date.now() + Math.random() },
-                    ...prev.slice(0, 49)
-                ]);
+                // Live node trace for Camel routes: backend sends taskId=nodeId
+                if (data.type === 'CAMEL_NODE' && data.taskId) {
+                    setNodeExecutionState(data.taskId, data.status, data.durationMs);
+                }
 
-                // Show toast with more details
+                // Add to events list (keep last 50, newest first, dedup by id)
+                setTaskEvents(prev => {
+                    const next = [normalized, ...prev.filter(evt => evt.id !== normalized.id)];
+                    return next.slice(0, 50);
+                });
+
+                // Show toast with more details (prefer node label if we can resolve it)
                 const durationInfo = data.durationMs ? ` (${data.durationMs}ms)` : '';
-                const nodeInfo = data.nodeType ? `[${data.nodeType}] ` : '';
+                const resolvedNodeLabel = (data.type === 'CAMEL_NODE' && data.taskId)
+                    ? (nodesRef.current.find(n => n.id === data.taskId)?.data?.label as string | undefined)
+                    : undefined;
+                const nodeInfo = resolvedNodeLabel
+                    ? `[${resolvedNodeLabel}] `
+                    : data.nodeType
+                        ? `[${data.nodeType}] `
+                        : '';
                 setMessage({
                     type: data.status === 'FAILED' ? 'error' : 'success',
                     text: `${nodeInfo}${data.message}${durationInfo}`
@@ -380,6 +462,13 @@ export default function CamelRouteBuilder() {
         return () => {
             eventSource.close();
         };
+    }, [normalizeEvent, setNodeExecutionState]);
+
+    useEffect(() => {
+        return () => {
+            Object.values(clearExecTimeoutsRef.current).forEach((id) => window.clearTimeout(id));
+            clearExecTimeoutsRef.current = {};
+        };
     }, []);
 
     // Load deployed routes on mount
@@ -397,7 +486,9 @@ export default function CamelRouteBuilder() {
 
     const loadDeployedRoutes = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/camel-routes`);
+            const res = await fetch(`${API_BASE_URL}/api/camel-routes`, {
+                headers: buildApiHeaders(),
+            });
             if (res.ok) {
                 const data = await res.json();
                 setDeployedRoutes(data);
@@ -427,6 +518,17 @@ export default function CamelRouteBuilder() {
     // Handle node selection
     const onNodeClick = useCallback((_: React.MouseEvent, node: Node<CamelNodeData>) => {
         setSelectedNode(node);
+        setSelectedEdge(null);
+    }, []);
+
+    const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+        setSelectedEdge(edge);
+        setSelectedNode(null);
+    }, []);
+
+    const clearSelection = useCallback(() => {
+        setSelectedNode(null);
+        setSelectedEdge(null);
     }, []);
 
     // Drag & Drop from palette
@@ -488,6 +590,46 @@ export default function CamelRouteBuilder() {
         }
     };
 
+    const updateEdgeData = (edgeId: string, updates: { label?: string; condition?: string; exceptionType?: string }) => {
+        setEdges((eds) =>
+            eds.map((e) => {
+                if (e.id !== edgeId) return e;
+                const prevData = (e as any).data || {};
+                const next: Edge = {
+                    ...e,
+                    label: updates.label ?? e.label,
+                    data: {
+                        ...prevData,
+                        ...(updates.condition !== undefined ? { condition: updates.condition } : {}),
+                        ...(updates.exceptionType !== undefined ? { exceptionType: updates.exceptionType } : {}),
+                    },
+                };
+                return next;
+            })
+        );
+        if (selectedEdge?.id === edgeId) {
+            setSelectedEdge((prev) => {
+                if (!prev) return prev;
+                const prevData = (prev as any).data || {};
+                return {
+                    ...prev,
+                    label: updates.label ?? prev.label,
+                    data: {
+                        ...prevData,
+                        ...(updates.condition !== undefined ? { condition: updates.condition } : {}),
+                        ...(updates.exceptionType !== undefined ? { exceptionType: updates.exceptionType } : {}),
+                    },
+                } as Edge;
+            });
+        }
+    };
+
+    const deleteSelectedEdge = () => {
+        if (!selectedEdge) return;
+        setEdges((eds) => eds.filter((e) => e.id !== selectedEdge.id));
+        setSelectedEdge(null);
+    };
+
     // Delete selected node
     const deleteSelectedNode = () => {
         if (!selectedNode) return;
@@ -509,6 +651,7 @@ export default function CamelRouteBuilder() {
     // Convert to API format
     const convertToApiFormat = () => {
         return {
+            schemaVersion: 1,
             id: routeId,
             name: routeName,
             description: routeDescription,
@@ -526,6 +669,15 @@ export default function CamelRouteBuilder() {
                 id: e.id,
                 source: e.source,
                 target: e.target,
+                // Preserve branching semantics (choice/try-catch) if present
+                sourceHandle: (e as unknown as { sourceHandle?: string }).sourceHandle,
+                targetHandle: (e as unknown as { targetHandle?: string }).targetHandle,
+                // Optional edge metadata (used for edge-level choice conditions / typed catches)
+                label: (e as unknown as { label?: string }).label,
+                condition: (e as unknown as { data?: { condition?: string }, condition?: string }).condition
+                    ?? (e as unknown as { data?: { condition?: string } }).data?.condition,
+                exceptionType: (e as unknown as { data?: { exceptionType?: string }, exceptionType?: string }).exceptionType
+                    ?? (e as unknown as { data?: { exceptionType?: string } }).data?.exceptionType,
             })),
         };
     };
@@ -535,9 +687,9 @@ export default function CamelRouteBuilder() {
         setLoading(true);
         try {
             const payload = convertToApiFormat();
-            const res = await fetch(`${API_BASE}/api/camel-routes`, {
+            const res = await fetch(`${API_BASE_URL}/api/camel-routes`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify(payload),
             });
             const data = await res.json();
@@ -567,9 +719,9 @@ export default function CamelRouteBuilder() {
                 return;
             }
 
-            const res = await fetch(`${API_BASE}/api/camel-routes/${routeId}/test`, {
+            const res = await fetch(`${API_BASE_URL}/api/camel-routes/${routeId}/test`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify(bodyPayload),
             });
             const data = await res.json();
@@ -590,15 +742,25 @@ export default function CamelRouteBuilder() {
         setNodes([initialNodes[0]]);
         setEdges([]);
         setSelectedNode(null);
+        setSelectedEdge(null);
+    };
+
+    const closeProperties = () => {
+        setSelectedNode(null);
+        setSelectedEdge(null);
     };
 
     // Load template
     const loadTemplate = (template: RouteTemplate) => {
-        setNodes(template.nodes.map(n => ({ ...n })));
+        setNodes(template.nodes.map(n => ({
+            ...n,
+            data: { ...n.data, execStatus: undefined, lastDurationMs: undefined, lastExecutedAt: undefined },
+        })));
         setEdges(template.edges.map(e => ({ ...e, markerEnd: { type: MarkerType.ArrowClosed }, style: { strokeWidth: 2 } })));
         setRouteId(template.id);
         setRouteName(template.name);
         setSelectedNode(null);
+        setSelectedEdge(null);
 
         // Pre-fill test data
         if (template.testData) {
@@ -671,15 +833,6 @@ export default function CamelRouteBuilder() {
                     />
                 </div>
 
-                <div className="camel-actions">
-                    <button className="btn-deploy" onClick={deployRoute} disabled={loading}>
-                        {loading ? '...' : '🚀 Deploy'}
-                    </button>
-                    <button className="btn-test" onClick={testRoute} disabled={loading}>
-                        ▶️ Test
-                    </button>
-                </div>
-
                 {deployedRoutes.length > 0 && (
                     <div className="deployed-routes">
                         <h4>Deployed Routes</h4>
@@ -706,10 +859,15 @@ export default function CamelRouteBuilder() {
                     onEdgesChange={onEdgesChange}
                     onConnect={onConnect}
                     onNodeClick={onNodeClick}
+                    onEdgeClick={onEdgeClick}
+                    onPaneClick={clearSelection}
                     onNodesDelete={onNodesDelete}
                     onDrop={onDrop}
                     onDragOver={onDragOver}
                     nodeTypes={camelNodeTypes}
+                    onInit={(instance) => {
+                        reactFlowInstanceRef.current = instance;
+                    }}
                     fitView
                     snapToGrid
                     snapGrid={[15, 15]}
@@ -719,114 +877,87 @@ export default function CamelRouteBuilder() {
                     <MiniMap
                         nodeColor={(n) => {
                             const type = n.data?.nodeType;
-                            if (type === 'from') return '#22c55e';
-                            if (type === 'to') return '#ef4444';
-                            if (type === 'log') return '#3b82f6';
-                            return '#6366f1';
+                            if (type === 'from') return 'var(--success)';
+                            if (type === 'to') return 'var(--danger)';
+                            if (type === 'log') return 'var(--primary)';
+                            return 'var(--primary-dark)';
                         }}
                     />
-                    <Panel position="top-right">
-                        <button onClick={clearCanvas} className="btn-clear">
+                    <Panel position="top-right" className="camel-canvas-actions">
+                        <button onClick={deployRoute} disabled={loading} className="action-btn deploy">
+                            {loading ? '⏳' : '🚀'} Deploy
+                        </button>
+                        <button onClick={testRoute} disabled={loading} className="action-btn test">
+                            ▶️ Test
+                        </button>
+                        <button onClick={clearCanvas} disabled={loading} className="action-btn clear">
                             🗑️ Clear
                         </button>
                     </Panel>
                 </ReactFlow>
 
+                {loading && (
+                    <div className="camel-status-overlay">⏳ Processing…</div>
+                )}
+
                 {/* Event Log Panel */}
                 {showEventLog && taskEvents.length > 0 && (
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        right: '10px',
-                        width: '350px',
-                        maxHeight: '200px',
-                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                        borderRadius: '8px',
-                        border: '1px solid #334155',
-                        overflow: 'hidden',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                        zIndex: 10
-                    }}>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '8px 12px',
-                            borderBottom: '1px solid #334155',
-                            backgroundColor: '#1e293b'
-                        }}>
-                            <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>📋 Event Log</span>
-                            <div>
-                                <button
-                                    onClick={() => setTaskEvents([])}
-                                    style={{
-                                        background: 'transparent',
-                                        border: 'none',
-                                        color: '#94a3b8',
-                                        cursor: 'pointer',
-                                        marginRight: '8px',
-                                        fontSize: '0.75rem'
-                                    }}
-                                >
+                    <div className="camel-eventlog">
+                        <div className="camel-eventlog-header">
+                            <span className="camel-eventlog-title">📋 Event Log</span>
+                            <div className="camel-eventlog-actions">
+                                <button onClick={() => setTaskEvents([])} className="camel-eventlog-action">
                                     Clear
                                 </button>
-                                <button
-                                    onClick={() => setShowEventLog(false)}
-                                    style={{
-                                        background: 'transparent',
-                                        border: 'none',
-                                        color: '#94a3b8',
-                                        cursor: 'pointer',
-                                        fontSize: '1rem'
-                                    }}
-                                >
+                                <button onClick={() => setShowEventLog(false)} className="camel-eventlog-action" aria-label="Close event log">
                                     ×
                                 </button>
                             </div>
                         </div>
-                        <div style={{
-                            maxHeight: '150px',
-                            overflowY: 'auto',
-                            padding: '4px'
-                        }}>
+                        <div className="camel-eventlog-list">
                             {taskEvents.map((evt) => (
-                                <div key={evt.id} style={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    padding: '6px 8px',
-                                    borderBottom: '1px solid #1e293b',
-                                    fontSize: '0.75rem',
-                                    gap: '8px'
-                                }}>
-                                    <span style={{
-                                        width: '8px',
-                                        height: '8px',
-                                        borderRadius: '50%',
-                                        backgroundColor: evt.status === 'FAILED' ? '#ef4444' : '#22c55e',
-                                        flexShrink: 0,
-                                        marginTop: '4px'
-                                    }} />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            marginBottom: '2px'
-                                        }}>
-                                            <span style={{
-                                                color: evt.type === 'CAMUNDA_TASK' ? '#a78bfa' : '#60a5fa',
-                                                fontWeight: 'bold'
-                                            }}>
-                                                {evt.nodeType || evt.type}
+                                <div
+                                    key={evt.id}
+                                    className="camel-eventlog-item"
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => {
+                                        if (evt.type === 'CAMEL_NODE' && evt.taskId) {
+                                            const target = nodesRef.current.find((n) => n.id === evt.taskId);
+                                            if (target) {
+                                                setSelectedNode(target);
+                                                setSelectedEdge(null);
+                                                reactFlowInstanceRef.current?.fitView({ nodes: [target], padding: 0.35, duration: 300, maxZoom: 1.6 });
+                                            }
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key !== 'Enter' && e.key !== ' ') return;
+                                        (e.currentTarget as HTMLDivElement).click();
+                                    }}
+                                    title={evt.type === 'CAMEL_NODE' ? `Node: ${evt.taskId}` : undefined}
+                                >
+                                    <span className={`camel-eventlog-dot ${evt.status === 'FAILED' ? 'failed' : 'ok'}`} />
+                                    <div className="camel-eventlog-main">
+                                        <div className="camel-eventlog-meta">
+                                            <span className={`camel-eventlog-source ${evt.type === 'CAMUNDA_TASK' ? 'camunda' : 'camel'}`}>
+                                                {(() => {
+                                                    if (evt.type === 'CAMEL_NODE' && evt.taskId) {
+                                                        const label = nodesRef.current.find((n) => n.id === evt.taskId)?.data?.label as string | undefined;
+                                                        return label || evt.nodeType || evt.type;
+                                                    }
+                                                    return evt.nodeType || evt.type;
+                                                })()}
                                             </span>
-                                            <span style={{ color: '#64748b', fontSize: '0.65rem' }}>
+                                            <span className="camel-eventlog-duration">
                                                 {evt.durationMs ? `${evt.durationMs}ms` : ''}
                                             </span>
                                         </div>
-                                        <div style={{ color: '#cbd5e1', wordBreak: 'break-word' }}>
+                                        <div className="camel-eventlog-message">
                                             {evt.message}
                                         </div>
                                         {evt.error && (
-                                            <div style={{ color: '#f87171', marginTop: '2px' }}>
+                                            <div className="camel-eventlog-error">
                                                 ⚠️ {evt.error}
                                             </div>
                                         )}
@@ -841,18 +972,7 @@ export default function CamelRouteBuilder() {
                 {!showEventLog && (
                     <button
                         onClick={() => setShowEventLog(true)}
-                        style={{
-                            position: 'absolute',
-                            bottom: '10px',
-                            right: '10px',
-                            padding: '8px 16px',
-                            backgroundColor: '#1e293b',
-                            color: '#94a3b8',
-                            border: '1px solid #334155',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            zIndex: 10
-                        }}
+                        className="camel-eventlog-toggle"
                     >
                         📋 Show Events ({taskEvents.length})
                     </button>
@@ -862,9 +982,12 @@ export default function CamelRouteBuilder() {
             {/* Right - Properties Panel */}
             {selectedNode && (
                 <div className="camel-properties">
-                    <h3>
-                        ⚙️ Properties
-                    </h3>
+                    <div className="camel-panel-header">
+                        <h3>⚙️ Properties</h3>
+                        <button className="camel-close-btn" onClick={closeProperties} aria-label="Close properties">
+                            ×
+                        </button>
+                    </div>
 
                     <div className="property-group">
                         <label>Label</label>
@@ -968,18 +1091,8 @@ export default function CamelRouteBuilder() {
 
                     <div className="property-group" style={{ marginTop: '1.5rem' }}>
                         <button
-                            className="btn-delete"
+                            className="camel-delete-btn"
                             onClick={deleteSelectedNode}
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                backgroundColor: '#ef4444',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold'
-                            }}
                         >
                             🗑️ Delete Node
                         </button>
@@ -989,6 +1102,74 @@ export default function CamelRouteBuilder() {
                         <strong>Node ID:</strong> {selectedNode.id}<br />
                         <strong>Type:</strong> {selectedNode.data.nodeType}
                     </div>
+                </div>
+            )}
+
+            {selectedEdge && (
+                <div className="camel-properties">
+                    <div className="camel-panel-header">
+                        <h3>🔗 Edge Properties</h3>
+                        <button className="camel-close-btn" onClick={closeProperties} aria-label="Close edge properties">
+                            ×
+                        </button>
+                    </div>
+
+                    {(() => {
+                        const meta = getEdgeMeta(selectedEdge);
+                        const sourceNode = nodes.find((n) => n.id === selectedEdge.source) as Node<CamelNodeData> | undefined;
+                        const sourceType = sourceNode?.data?.nodeType;
+                        const showCondition = meta.sourceHandle === 'when' || sourceType === 'choice';
+                        const showExceptionType = meta.sourceHandle === 'catch' || sourceType === 'trycatch';
+                        return (
+                            <>
+                                <div className="property-group">
+                                    <label>Label</label>
+                                    <input
+                                        value={meta.label || ''}
+                                        onChange={(e) => updateEdgeData(selectedEdge.id, { label: e.target.value })}
+                                        placeholder="(optional)"
+                                    />
+                                </div>
+
+                                {showCondition && (
+                                    <div className="property-group">
+                                        <label>Condition (Simple)</label>
+                                        <textarea
+                                            value={meta.condition || ''}
+                                            onChange={(e) => updateEdgeData(selectedEdge.id, { condition: e.target.value })}
+                                            placeholder='${body} != null'
+                                        />
+                                    </div>
+                                )}
+
+                                {showExceptionType && (
+                                    <div className="property-group">
+                                        <label>Exception Type (FQCN)</label>
+                                        <input
+                                            value={meta.exceptionType || ''}
+                                            onChange={(e) => updateEdgeData(selectedEdge.id, { exceptionType: e.target.value })}
+                                            placeholder="java.lang.Exception"
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="property-group" style={{ marginTop: '1.5rem' }}>
+                                    <button
+                                        className="camel-delete-btn"
+                                        onClick={deleteSelectedEdge}
+                                    >
+                                        🗑️ Delete Edge
+                                    </button>
+                                </div>
+
+                                <div className="property-group" style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                    <strong>Edge ID:</strong> {selectedEdge.id}<br />
+                                    <strong>From:</strong> {selectedEdge.source} ({meta.sourceHandle || 'default'})<br />
+                                    <strong>To:</strong> {selectedEdge.target}
+                                </div>
+                            </>
+                        );
+                    })()}
                 </div>
             )}
         </div>
